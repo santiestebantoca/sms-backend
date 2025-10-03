@@ -1,0 +1,17 @@
+/uploads
+/errors
+/databases
+/sessions
+/static/assets
+/static/bootstrap
+/static/build
+/static/icons
+/static/css/custom.css
+/cron
+/.idea
+/__pycache__
+ABOUT
+LICENSE
+routes.example.py
+__init__.py
+__init__.pyc
