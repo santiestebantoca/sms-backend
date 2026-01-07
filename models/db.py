@@ -12,7 +12,10 @@ db = DAL(
     app_config.get("db.sms"),
     check_reserved=["all"],
     migrate=False,
+    migrate_enabled=False
 )
+
+session.connect(request, response, db, masterapp=None)
 
 auth = Auth(db)
 service = Service()
