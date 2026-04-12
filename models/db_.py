@@ -37,7 +37,7 @@ tabla(
     "mensaje",
     Field("de", "reference auth_user"),
     Field("en", "datetime", default=request.now),
-    Field("texto"),
+    Field("texto", "string", lenght=3000),
     Field("continua", "boolean"),
     Field("previo", "reference mensaje"),
     Field("subgrupo", "reference mensaje"),
