@@ -7,29 +7,29 @@ def limitby(vars):
     return (int(min), int(max))
 
 
-def grupos(db, auth, vars):
-    def traversal(id):
-        fds = [
-            db.grupo.id,
-            db.grupo.nombre,
-            db.grupo.pertenece,
-            db.grupo.label,
-        ]  # `pertenece` for back tracking
-        _ = db(db.grupo.id == id).select(*fds).first().as_dict()
-        q = db.grupo.pertenece == id
-        if vars.label:
-            q &= db.grupo.label.contains(vars.label)
-        __ = db(q).select(db.grupo.id, orderby=db.grupo.id)
-        len(__) and _.update(children=[traversal(r.id) for r in __])
-        return _
+# def grupos(db, auth, vars):
+#     def traversal(id):
+#         fds = [
+#             db.grupo.id,
+#             db.grupo.nombre,
+#             db.grupo.pertenece,
+#             db.grupo.label,
+#         ]  # `pertenece` for back tracking
+#         _ = db(db.grupo.id == id).select(*fds).first().as_dict()
+#         q = db.grupo.pertenece == id
+#         if vars.label:
+#             q &= db.grupo.label.contains(vars.label)
+#         __ = db(q).select(db.grupo.id, orderby=db.grupo.id)
+#         len(__) and _.update(children=[traversal(r.id) for r in __])
+#         return _
 
-    _list = []
-    q = db.grupo.pertenece == None
-    if vars.label:
-        q &= db.grupo.label.contains(vars.label)
-    for r in db(q).select(db.grupo.id, orderby=db.grupo.id):
-        _list.append(traversal(r.id))
-    return _list
+#     _list = []
+#     q = db.grupo.pertenece == None
+#     if vars.label:
+#         q &= db.grupo.label.contains(vars.label)
+#     for r in db(q).select(db.grupo.id, orderby=db.grupo.id):
+#         _list.append(traversal(r.id))
+#     return _list
 
 
 def suscriptores(db, auth, vars):
@@ -87,20 +87,20 @@ def users(db, auth, vars):
     return dict(data=rows, total=count)
 
 
-def plantillas(db, auth, vars):
-    left = False
-    fds = [
-        db.vw_plantilla.id,
-        db.vw_plantilla.texto,
-        db.vw_plantilla.modified_by,
-    ]
-    args = dict(distinct=True, orderby=~db.vw_plantilla.id)
-    vars.limit and args.update(limitby=limitby(vars))
-    q = db.vw_plantilla.id > 0
-    # return::
-    sql = db(q)._select(*fds, left=left, **args)
-    rows = db.executesql(sql)
-    sql = db(q)._select(*fds, left=left).split(" FROM ", 1)
-    sql = "SELECT COUNT(DISTINCT vw_plantilla.id) FROM " + sql[1]
-    count = db.executesql(sql)[0][0]
-    return dict(data=rows, total=count)
+# def plantillas(db, auth, vars):
+#     left = False
+#     fds = [
+#         db.vw_plantilla.id,
+#         db.vw_plantilla.texto,
+#         db.vw_plantilla.modified_by,
+#     ]
+#     args = dict(distinct=True, orderby=~db.vw_plantilla.id)
+#     vars.limit and args.update(limitby=limitby(vars))
+#     q = db.vw_plantilla.id > 0
+#     # return::
+#     sql = db(q)._select(*fds, left=left, **args)
+#     rows = db.executesql(sql)
+#     sql = db(q)._select(*fds, left=left).split(" FROM ", 1)
+#     sql = "SELECT COUNT(DISTINCT vw_plantilla.id) FROM " + sql[1]
+#     count = db.executesql(sql)[0][0]
+#     return dict(data=rows, total=count)

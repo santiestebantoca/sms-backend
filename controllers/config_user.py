@@ -139,7 +139,7 @@ class Validate:
             q |= db.solicitud.supervisor == id
             if db(q).count():
                 raise HTTP(
-                    405, 'Una regla de integridad impidió realizar esta acción.')
+                    405, 'Una regla de integridad impidió realizar esta acción.', **headers)
             return fn(*k, **kw)
 
         return run
@@ -156,7 +156,7 @@ class Validate:
             # New to consider scoped admins to action over no area users
             c |= db.auth_user(id).area in [auth.user.area, None]
             if not c:
-                raise HTTP(403, 'Forbidden.')
+                raise HTTP(403, 'Forbidden.', **headers)
             return fn(*k, **kw)
 
         return run

@@ -10,6 +10,7 @@ app_config = AppConfig(reload=False)
 
 db = DAL(
     app_config.get("db.sms"),
+    pool_size=10,
     check_reserved=["all"],
     migrate=False,
     migrate_enabled=False
@@ -86,13 +87,6 @@ We force X-Requested-With: XMLHttpRequest in client request,
 that is the way web2py recognizes the ajax request.
 """
 
-if request.ajax:
-
-    def resp403():
-        raise HTTP(403, "Not authorized")
-
-    auth.settings.on_failed_authorization = resp403
-
 # frontURL = myconf.get('front.url', request.env.http_origin)
 frontURL = request.env.http_origin
 
@@ -107,3 +101,17 @@ headers = {
     # 24hrs  // cache for Allow Header & Allow Methods
     "Access-Control-Max-Age": 86400,
 }
+
+# response.headers.update(**headers)
+
+if request.ajax:
+
+    def resp401():
+        raise HTTP(401, **headers)
+
+
+    def resp403():
+        raise HTTP(403, **headers)
+
+    auth.settings.on_failed_authentication = resp401
+    auth.settings.on_failed_authorization = resp403

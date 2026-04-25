@@ -30,7 +30,8 @@ tabla(
 )
 
 tabla(
-    "notifica", Field("grupo_a", "reference grupo"), Field("grupo_b", "reference grupo")
+    "notifica", Field("grupo_a", "reference grupo"), Field(
+        "grupo_b", "reference grupo")
 )
 
 tabla(
@@ -51,8 +52,8 @@ tabla(
 )
 
 tabla("plantilla", Field("texto"), auth.signature)
-## Rules
 
-db.grupo.apodo.requires = [
-    IS_EMPTY_OR(IS_NOT_IN_DB(db, "grupo.apodo", error_message="Ya existe el alias"))
-]
+# Rules
+
+db.grupo.apodo.requires = IS_EMPTY_OR(
+    IS_NOT_IN_DB(db, "grupo.apodo", error_message="Ya existe el alias"))

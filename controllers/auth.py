@@ -9,7 +9,11 @@ def login():
 
     def POST(**vars):
         login_bare(vars['username'], vars['password'])
-        return response.json(user())
+        res = user()
+        if not res:
+            response.status = 422
+            return response.json({})
+        return response.json(res)
 
     def DELETE():
         if auth.user:
