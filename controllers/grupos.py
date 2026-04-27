@@ -5,7 +5,7 @@ __author__ = "jorge.santiesteban"
 @request.restful()
 def grupos():
 
-    def GET(id=None, label=None, include=None):
+    def GET(id=None, label=None, notificables=None, include=None):
         if id:
             def suscriptores():
                 q = db.suscriptor.grupo == id

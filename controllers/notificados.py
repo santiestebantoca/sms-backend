@@ -28,12 +28,20 @@ def notificados():
                     db.suscriptor.grupo,
                 ]
                 for r in res:
-                    r.update(suscriptores = (
-                        db(db.suscriptor.grupo == r["id"]).select(*fds).as_list()
+                    r.update(suscriptores=(
+                        db(db.suscriptor.grupo == r["id"]).select(
+                            *fds).as_list()
                     ))
             return response.json(res)
         else:
             return response.json([])
+
+    @auth.requires_login()
+    def POST(grupo_a, grupo_b):
+        db(db.notifica.grupo_a == grupo_a).delete()
+        data = [{"grupo_a": grupo_a, "grupo_b": val} for val in grupo_b]
+        res = db.notifica.bulk_insert(data)  # [1, 2, ...]
+        return response.json(res)
 
     def OPTIONS(*args, **vars):
         raise HTTP(200, **headers)
