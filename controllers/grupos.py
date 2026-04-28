@@ -5,7 +5,7 @@ __author__ = "jorge.santiesteban"
 @request.restful()
 def grupos():
 
-    def GET(id=None, label=None, notificables=None, include=None):
+    def GET(id=None, label='all', structure='flat', include=None):
         if id:
             def suscriptores():
                 q = db.suscriptor.grupo == id
@@ -32,29 +32,13 @@ def grupos():
                 grupo["notifica"] = notifica()
             return response.json(grupo)
         else:
-            def traversal(id):
-                fds = [
-                    db.grupo.id,
-                    db.grupo.nombre,
-                    db.grupo.apodo,
-                    db.grupo.pertenece,
-                    db.grupo.label,
-                ]  # `pertenece` for back tracking
-                _ = db(db.grupo.id == id).select(*fds).first().as_dict()
-                q = db.grupo.pertenece == id
-                if label:
-                    q &= db.grupo.label.contains(label)
-                __ = db(q).select(db.grupo.id, orderby=db.grupo.id)
-                len(__) and _.update(children=[traversal(r.id) for r in __])
-                return _
-
-            _list = []
-            q = db.grupo.pertenece == None
-            if label:
-                q &= db.grupo.label.contains(label)
-            for r in db(q).select(db.grupo.id, orderby=db.grupo.id):
-                _list.append(traversal(r.id))
-            return response.json(_list)
+            q = db.grupo.id > 0
+            if 'grupo' in label and 'centro' in label:
+                q &= ((db.grupo.label == None) | db.grupo.label.contains('centro'))
+            if 'centro' in label and 'origen' in label:
+                q &= db.grupo.label.contains(['centro', 'origen'])
+            res = db(q).select()
+            return response.json(res)             
 
     @auth.requires_login()
     def DELETE(id):
