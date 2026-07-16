@@ -5,7 +5,7 @@ __author__ = "jorge.santiesteban"
 @request.restful()
 def plantillas():
 
-    def GET(id=None, texto=None):
+    def GET(id=None, search=None):
         if id:
             def name(user):
                 if not user:
@@ -31,16 +31,18 @@ def plantillas():
                 db.vw_plantilla.modified_by,
             ]
             args = dict(distinct=True, orderby=~db.vw_plantilla.id)
-            query = db.vw_plantilla.texto.contains(texto)
+            query = db.vw_plantilla.id > 0
+            if search:
+                query &= db.vw_plantilla.texto.contains(search)
             res = db(query).select(*fds, **args)
             return response.json(res)
 
-    def POST(*args, **vars):
+    def POST(**vars):
         res = db.plantilla.validate_and_insert(**vars)
         if (res.errors):
             response.status = 422
             return response.json(res.errors)
-        plantilla = db.plantilla(res.id)
+        plantilla = db.vw_plantilla(res.id)
         return response.json(plantilla)
 
     # @auth.requires_membership('administrador')
@@ -49,10 +51,10 @@ def plantillas():
         if (res.errors):
             response.status = 422
             return response.json(res.errors)
-        return response.json(res)
+        return response.json(db.vw_plantilla(id))
 
     # @auth.requires_membership("administrador")
-    def DELETE(id, **vars):
+    def DELETE(id):
         res = db(db.plantilla.id == id).delete()
         return response.json(res)
 

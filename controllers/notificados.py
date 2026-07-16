@@ -6,18 +6,19 @@ __author__ = "jorge.santiesteban"
 def notificados():
 
     def GET(id=None, origen=None, include=None):
-        def ids():
-            q = db.notifica.grupo_a.belongs(origen.split(","))
+        def grupos_notificados_ids(grupo_a_ids):
+            q = db.notifica.grupo_a.belongs(grupo_a_ids)
             return db(q)._select(db.notifica.grupo_b)
 
         if origen:
+            origenes = origen if isinstance(origen, list) else [origen]
             fds = [
                 db.grupo.id,
                 db.grupo.nombre,
                 db.grupo.apodo
             ]
             args = dict(orderby=db.grupo.id)
-            query = db.grupo.id.belongs(ids())
+            query = db.grupo.id.belongs(grupos_notificados_ids(origenes))
             res = db(query).select(*fds, **args)
             if include == 'suscriptor':
                 fds = [
@@ -37,10 +38,25 @@ def notificados():
             return response.json([])
 
     @auth.requires_login()
-    def POST(grupo_a, grupo_b):
-        db(db.notifica.grupo_a == grupo_a).delete()
-        data = [{"grupo_a": grupo_a, "grupo_b": val} for val in grupo_b]
-        res = db.notifica.bulk_insert(data)  # [1, 2, ...]
+    def PUT(grupo_a, grupo_b):
+        # 1. Eliminar los que ya no están
+        deleteQuery = db.notifica.grupo_a == grupo_a
+        deleteQuery &= ~db.notifica.grupo_b.belongs(grupo_b)
+        db(deleteQuery).delete()
+
+        # 2. Crear los nuevos (bulk)
+        existentes = db(db.notifica.grupo_a == grupo_a).select(
+            db.notifica.grupo_b)
+        existentes_set = set(row.grupo_b for row in existentes)
+
+        nuevos = [{'grupo_a': grupo_a, 'grupo_b': b}
+                  for b in grupo_b if b not in existentes_set]
+        if nuevos:
+            res = db.notifica.bulk_insert(nuevos)
+
+        # 3. Devolver los registros existentes después del PUT
+        # res = db(db.notifica.grupo_a == grupo_a).select()
+
         return response.json(res)
 
     def OPTIONS(*args, **vars):

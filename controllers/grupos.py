@@ -5,7 +5,7 @@ __author__ = "jorge.santiesteban"
 @request.restful()
 def grupos():
 
-    def GET(id=None, label='all', structure='flat', include=None):
+    def GET(id=None, label='all', include=None):
         if id:
             def suscriptores():
                 q = db.suscriptor.grupo == id
@@ -15,7 +15,7 @@ def grupos():
                 q = db.grupo.pertenece == id
                 return db(q).select(orderby=db.grupo.id).as_list()
 
-            def notifica():
+            def notificados():
                 q = db.vw_notifica.grupo_a == id
                 return db(q).select(orderby=db.vw_notifica.id).as_list()
 
@@ -23,13 +23,11 @@ def grupos():
             if not grupo:
                 response.status = 404
                 return response.json(None)
-            _include = include.split(",") if include else []
-            if "suscriptores" in _include:
+            if include == 'all':
                 grupo["suscriptores"] = suscriptores()
-            if "hijos" in _include:
-                grupo["children"] = grupos()
-            if "notificados" in _include:
-                grupo["notifica"] = notifica()
+                grupo["hijos"] = grupos()
+                grupo["notificados"] = notificados()
+            
             return response.json(grupo)
         else:
             q = db.grupo.id > 0
