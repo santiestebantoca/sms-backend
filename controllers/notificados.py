@@ -52,10 +52,10 @@ def notificados():
         nuevos = [{'grupo_a': grupo_a, 'grupo_b': b}
                   for b in grupo_b if b not in existentes_set]
         if nuevos:
-            res = db.notifica.bulk_insert(nuevos)
+            db.notifica.bulk_insert(nuevos)
 
         # 3. Devolver los registros existentes después del PUT
-        # res = db(db.notifica.grupo_a == grupo_a).select()
+        res = db(db.notifica.grupo_a == grupo_a).select()
 
         return response.json(res)
 

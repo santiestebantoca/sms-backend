@@ -3,17 +3,16 @@ __author__ = "jorge.santiesteban"
 
 
 @request.restful()
-def meta():
+def notificaciones():
 
-    def GET(id=None, include="pendientes"):
+    def GET(id=None):
         def pendientes():
             query = db.mensaje.continua == True
             return db(query).count()
         
-        res = {}
-        _include = include.split(",") if include else []
-        if "pendientes" in _include:
-            res["pendientes"] = pendientes()
+        res = {
+            "pendientes": pendientes()
+        }
         return response.json(res)
 
     def OPTIONS(*args, **vars):
@@ -25,7 +24,7 @@ def meta():
 @request.restful()
 def mensajes():
 
-    def GET(id=None, continua=None, desde=None, hasta=None, include=None):
+    def GET(id=None, continua=None, desde=None, hasta=None, search=None, include=None):
         if id:
             def suscriptores(mensaje_id):
                 fds = [
@@ -53,11 +52,15 @@ def mensajes():
                 db.vw_mensaje.subgrupo,
             ]
             args = dict(distinct=True, orderby=db.vw_mensaje.id)
+            query = None
             if continua:
                 query = db.vw_mensaje.continua == True
             elif desde and hasta:
                 query = db.vw_mensaje.en >= desde
                 query &= db.vw_mensaje.en <= hasta + " 23:59:59"
+            if query:
+                if search:
+                    query &= db.vw_mensaje.texto.contains(search)
             else:
                 query = db.vw_mensaje.id == 0
             res = db(query).select(*fds, **args)

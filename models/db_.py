@@ -30,8 +30,9 @@ tabla(
 )
 
 tabla(
-    "notifica", Field("grupo_a", "reference grupo"), Field(
-        "grupo_b", "reference grupo")
+    "notifica",
+    Field("grupo_a", "reference grupo"),
+    Field("grupo_b", "reference grupo")
 )
 
 tabla(

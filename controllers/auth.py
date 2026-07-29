@@ -85,12 +85,17 @@ def impersonate():
 
 @request.restful()
 def users():
-    def GET(*args, **vars):
-        if 'name' in vars:
-            q = db.usuario.name.contains(vars['name'])
-            res = db(q).select(limitby=(0, 10))
-        else:
-            res = db(db.usuario).select()
+    def GET(search=None):
+        fds = [
+            db.vw_usuario.id,
+            db.vw_usuario.name,
+            db.vw_usuario.username,
+        ]
+        args = dict(distinct=True, orderby=~db.vw_usuario.name)
+        query = db.vw_usuario.id > 0
+        if search:
+            query &= db.vw_usuario.name.contains(search)
+        res = db(query).select(*fds, **args)
         return response.json(res)
 
     def OPTIONS(*args, **vars):
