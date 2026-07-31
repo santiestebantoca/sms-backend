@@ -5,7 +5,7 @@ __author__ = "jorge.santiesteban"
 @request.restful()
 def suscriptores():
     
-    def GET(id=None, search=None):
+    def GET(id=None, search=None, grupo=None):
         if id:
             res = db.vw_suscriptor(id)
             return response.json(res)
@@ -15,12 +15,16 @@ def suscriptores():
                 db.vw_suscriptor.nombre,
                 db.vw_suscriptor.activo,
                 db.vw_suscriptor.grupo,
+                db.vw_suscriptor.telefono,
+                db.vw_suscriptor.correo,
                 db.vw_suscriptor.suplente,
             ]
             args = dict(distinct=True, orderby=db.vw_suscriptor.nombre)
             query = db.vw_suscriptor.id > 0
             if search:
                 query &= db.vw_suscriptor.nombre.contains(search)
+            if grupo:
+                query &= db.vw_suscriptor.grupo_id == grupo
             res = db(query).select(*fds, **args)
             return response.json(res)
     

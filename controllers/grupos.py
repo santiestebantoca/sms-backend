@@ -5,28 +5,28 @@ __author__ = "jorge.santiesteban"
 @request.restful()
 def grupos():
 
-    def GET(id=None, label='all', include=None):
+    def GET(id=None, label='all', pertenece=None, include=None):
         if id:
-            def suscriptores():
-                q = db.suscriptor.grupo == id
-                return db(q).select(orderby=db.suscriptor.id).as_list()
+            # def suscriptores():
+            #     q = db.suscriptor.grupo == id
+            #     return db(q).select(orderby=db.suscriptor.id).as_list()
 
-            def grupos():
-                q = db.grupo.pertenece == id
-                return db(q).select(orderby=db.grupo.id).as_list()
+            # def grupos():
+            #     q = db.grupo.pertenece == id
+            #     return db(q).select(orderby=db.grupo.id).as_list()
 
-            def notificados():
-                q = db.vw_notifica.grupo_a == id
-                return db(q).select(orderby=db.vw_notifica.id).as_list()
+            # def notificados():
+            #     q = db.vw_notifica.grupo_a == id
+            #     return db(q).select(orderby=db.vw_notifica.id).as_list()
 
             grupo = db.grupo(id)
             if not grupo:
                 response.status = 404
                 return response.json(None)
-            if include == 'all':
-                grupo["suscriptores"] = suscriptores()
-                grupo["hijos"] = grupos()
-                grupo["notificados"] = notificados()
+            # if include == 'all':
+            #     grupo["suscriptores"] = suscriptores()
+            #     grupo["hijos"] = grupos()
+            #     grupo["notificados"] = notificados()
             
             return response.json(grupo)
         else:
@@ -35,7 +35,9 @@ def grupos():
                 q &= ((db.grupo.label == None) | db.grupo.label.contains('centro'))
             if 'centro' in label and 'origen' in label:
                 q &= db.grupo.label.contains(['centro', 'origen'])
-            res = db(q).select()
+            if pertenece:
+                q &= db.grupo.pertenece == pertenece
+            res = db(q).select(orderby=db.grupo.id)
             return response.json(res)             
 
     @auth.requires_login()
