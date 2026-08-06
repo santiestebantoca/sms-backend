@@ -2,18 +2,96 @@
 __author__ = 'jorge.santiesteban'
 
 
-# Statics
-
 @request.restful()
-def authgroup():
-
-    def GET(*args, **vars):
-        return response.json(db(db.auth_group).select())
-
+def usuarios():
+    
+    @auth.requires_membership('administrador')
+    def GET(id=None, search=None):
+        if id:
+            # Tiene que ser auth_user, no vw_usuario, para formulario editar (fisrt_name, ...)
+            fds = [
+                db.auth_user.id,
+                db.auth_user.first_name,
+                db.auth_user.last_name,
+                db.auth_user.username,
+                db.auth_user.registration_key,
+                db.auth_user.created_on,
+                db.auth_user.created_by,
+                db.auth_user.modified_on,
+                db.auth_user.modified_by,
+            ]
+            res = db(db.auth_user.id == id).select(*fds).first()
+            return response.json(res)
+        else:
+            fds = [
+                db.vw_usuario.id,
+                db.vw_usuario.name,
+                db.vw_usuario.registration_key,
+            ]
+            args = dict(distinct=True, orderby=db.vw_usuario.name)
+            query = db.vw_usuario.id > 0
+            if search:
+                query &= db.vw_usuario.name.contains(search)
+            res = db(query).select(*fds, **args)
+            return response.json(res)
+            
+    @auth.requires_membership('administrador')
+    def POST(**vars):
+        """
+        Esta app no usa auth_user.email, de lo contrario se aplica:
+        db.auth_user.email.requires = IS_EMPTY_OR(IS_NOT_IN_DB(db, "auth_user.email"))
+        """
+        db.auth_user.password.requires = None  # disable validator
+        db.auth_user.email.requires = None # disable validator
+        res = db.auth_user.validate_and_insert(**vars)
+        if (res.errors):
+            response.status = 422
+            return response.json(res.errors)
+        return response.json(db.auth_user(res.id))
+    
+    @auth.requires_login()
+    def PUT(id, **vars):
+        """
+        Esta app no usa auth_user.email, de lo contrario se aplica:
+        db.auth_user.email.requires = IS_EMPTY_OR(IS_NOT_IN_DB(otros_usuarios, "auth_user.email"))
+        """
+        db.auth_user.password.requires = None  # disable validator
+        db.auth_user.email.requires = None # disable validator
+        otros_usuarios = db(db.auth_user.id != id)
+        db.auth_user.username.requires = [IS_NOT_EMPTY(),
+                                          IS_NOT_IN_DB(otros_usuarios, "auth_user.username")]
+        res = db(db.auth_user.id == id).validate_and_update(**vars)
+        if (res.errors):
+            response.status = 422
+            return response.json(res.errors)
+        return response.json(db.auth_user(id))
+    
+    @auth.requires_membership('administrador')
+    def DELETE(id):
+        res = db(db.auth_user.id == id).delete()
+        return response.json(res)
+    
     def OPTIONS(*args, **vars):
         raise HTTP(200, **headers)
 
-    return locals()
+    return locals() 
+
+
+
+
+"""
+# Statics
+
+# @request.restful()
+# def authgroup():
+
+#     def GET(*args, **vars):
+#         return response.json(db(db.auth_group).select())
+
+#     def OPTIONS(*args, **vars):
+#         raise HTTP(200, **headers)
+
+#     return locals()
 
 # //
 
@@ -63,13 +141,6 @@ def users():
             return response.json(users(db, auth, Storage(vars)))
 
     @auth.requires_membership('administrador')
-    def POST(*args, **vars):
-        db.auth_user.password.requires = None  # disable validator
-        db.auth_user.email.requires = None  # disable validator
-        res = db.auth_user.validate_and_insert(**vars)
-        return response.json(res)
-
-    @auth.requires_membership('administrador')
     # @Validate.user_in_scope
     def PUT(id, **vars):
         current_values = db(db.auth_user.id == id).select(
@@ -99,10 +170,10 @@ def users():
 
     return locals()
 
-"""
+
 Different from the `admred` or `dar` interfaces,
 it recieve a list of groups to set up, in the POST method
-"""
+
 @request.restful()
 def membership():
 
@@ -119,7 +190,7 @@ def membership():
         raise HTTP(200, **headers)
 
     return locals()
-
+"""
 
 class Validate:
     """

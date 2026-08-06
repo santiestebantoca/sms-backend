@@ -19,9 +19,22 @@ tabla("vw_envio",
     migrate=False,
 )
 
-tabla("vw_plantilla", Field("texto"), Field("modified_by"))
+tabla("vw_plantilla",
+    Field("texto"),
+    Field("modified_by"),
+    migrate=False
+)
 
-tabla("vw_usuario", Field("name"), Field("username"))
+tabla("vw_usuario",
+    Field("name"),
+    Field("username"),
+    Field("registration_key"),
+    Field("created_on"),
+    Field("created_by"),
+    Field("modified_on"),
+    Field("modified_by"),
+    migrate=False
+)
 
 tabla("vw_mensaje",
     Field("de"),

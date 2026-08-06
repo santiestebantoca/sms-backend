@@ -93,6 +93,7 @@ def users():
         ]
         args = dict(distinct=True, orderby=~db.vw_usuario.name)
         query = db.vw_usuario.id > 0
+        query &= ((db.vw_usuario.registration_key == None) | (db.vw_usuario.registration_key == ''))
         if search:
             query &= db.vw_usuario.name.contains(search)
         res = db(query).select(*fds, **args)

@@ -7,6 +7,7 @@ def envios():
 
     def GET(id=None, mensaje_id=None):
         fds = [
+            db.vw_envio.suscriptor_id,
             db.vw_envio.suscriptor,
             db.vw_envio.grupo,
         ]

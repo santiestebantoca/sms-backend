@@ -5,7 +5,7 @@ __author__ = "jorge.santiesteban"
 @request.restful()
 def notificados():
 
-    def GET(id=None, origen=None, include=None):
+    def GET(id=None, origen=None, include='suscriptores'):
         def grupos_notificados_ids(grupo_a_ids):
             q = db.notifica.grupo_a.belongs(grupo_a_ids)
             return db(q)._select(db.notifica.grupo_b)
@@ -20,7 +20,7 @@ def notificados():
             args = dict(orderby=db.grupo.id)
             query = db.grupo.id.belongs(grupos_notificados_ids(origenes))
             res = db(query).select(*fds, **args)
-            if include == 'suscriptor':
+            if include == 'suscriptores':
                 fds = [
                     db.suscriptor.id,
                     db.suscriptor.nombre,

@@ -5,22 +5,9 @@ __author__ = "jorge.santiesteban"
 @request.restful()
 def mensajes():
 
-    def GET(id=None, continua=None, desde=None, hasta=None, search=None, include=None):
+    def GET(id=None, continua=None, desde=None, hasta=None, search=None):
         if id:
-            def suscriptores(mensaje_id):
-                fds = [
-                    db.vw_envio.suscriptor_id,
-                    db.vw_envio.suscriptor,
-                    db.vw_envio.grupo
-                ]
-                args = dict(distinct=True, orderby=~db.vw_envio.grupo_id)
-                query = db.vw_envio.mensaje_id == mensaje_id
-                return db(query).select(*fds, **args).as_list()
-
             res = db.mensaje(id)
-            _include = include.split(",") if include else []
-            if "destinatarios" in _include:
-                res["destinatarios"] = suscriptores(id)
             return response.json(res)
         else:
             fds = [
@@ -56,18 +43,16 @@ def mensajes():
         return response.json(db.mensaje(id))
 
     @auth.requires_login()
-    def POST(**vars):
-        """
-        vars (texto, continua, previo, destinatarios)
-        """
+    def POST(texto, continua, destinatarios, previo=None):
         from applications.sms.modules.notificar.notificar import notificar
 
-        query = db.suscriptor.id.belongs(vars["destinatarios"])
+        de = auth.user_id
+        query = db.suscriptor.id.belongs(destinatarios)
         suscriptores = db(query).select()
-        res = db.mensaje.validate_and_insert(de=auth.user_id,
-                                             texto=vars["texto"],
-                                             continua=vars["continua"],
-                                             previo=vars["previo"])
+        res = db.mensaje.validate_and_insert(de=de,
+                                             texto=texto,
+                                             continua=continua,
+                                             previo=previo)
         if (res.errors):
             response.status = 422
             return response.json(res.errors)
