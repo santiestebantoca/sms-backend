@@ -7,8 +7,8 @@ def login():
     def GET():
         return response.json(user())
 
-    def POST(**vars):
-        login_bare(vars['username'], vars['password'])
+    def POST(username, password):
+        login_bare(username, password)
         res = user()
         if not res:
             response.status = 422
@@ -16,9 +16,8 @@ def login():
         return response.json(res)
 
     def DELETE():
-        if auth.user:
-            log = auth.messages['logout_log']
-            auth.log_event(log, auth.user, origin='auth')
+        if auth.user:            
+            auth.log_event(auth.messages['logout_log'], auth.user, origin='auth')
             auth.logout_bare()
         return response.json(user())
 
@@ -70,9 +69,9 @@ def login_bare(username, password):
 
 @request.restful()
 def impersonate():
-    def POST(*args, **vars):
+    def POST(user_id=0):
         if can_impersonate():
-            auth.impersonate(request.args(0) or '0')
+            auth.impersonate(user_id)
         else:
             auth.impersonate('0')
         return response.json(user())
