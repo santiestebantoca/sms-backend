@@ -18,7 +18,10 @@ db = DAL(
 
 session.connect(request, response, db, masterapp=None)
 
-auth = Auth(db)
+# host names must be a list of allowed host names (glob syntax allowed)
+# auth = Auth(db, host_names=configuration.get('host.names'))
+auth = Auth(db, secure=False)
+
 service = Service()
 plugins = PluginManager()
 
@@ -48,13 +51,6 @@ auth.settings.actions_disabled = [
     "profile",
 ]
 auth.settings.expiration = 86400  # 24 hora (por defecto 3600: 1 hora)
-
-# ds.etecsa.cu
-# auth.settings.login_methods.append(
-#     ldap_auth(
-#         server='192.168.91.114',
-#         base_dn='ou=etecsa.cu,ou=People,dc=etecsa,dc=cu')
-# )
 
 # lds.etecsa.cu
 auth.settings.login_methods.append(
