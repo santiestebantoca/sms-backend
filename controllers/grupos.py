@@ -13,16 +13,16 @@ def grupos():
                 return response.json(None)
             
             return response.json(grupo)
-        else:
-            q = db.grupo.id > 0
-            if 'grupo' in label and 'centro' in label:
-                q &= ((db.grupo.label == None) | db.grupo.label.contains('centro'))
-            if 'centro' in label and 'origen' in label:
-                q &= db.grupo.label.contains(['centro', 'origen'])
-            if pertenece:
-                q &= db.grupo.pertenece == pertenece
-            res = db(q).select(orderby=db.grupo.id)
-            return response.json(res)             
+
+        q = db.grupo.id > 0
+        if 'grupo' in label and 'centro' in label:
+            q &= ((db.grupo.label == None) | db.grupo.label.contains('centro'))
+        if 'centro' in label and 'origen' in label:
+            q &= db.grupo.label.contains(['centro', 'origen'])
+        if pertenece:
+            q &= db.grupo.pertenece == pertenece
+        res = db(q).select(orderby=db.grupo.id)
+        return response.json(res)             
 
     @auth.requires_login()
     def DELETE(id):

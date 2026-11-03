@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 __author__ = "jorge.santiesteban"
+
 from gluon.contrib.appconfig import AppConfig
+from gluon import current
 from threading import Thread
 
 app_config = AppConfig(reload=False)
@@ -30,26 +32,31 @@ def send_api(data):
 
 
 @run_in_thread
-def send_email_task(email_list, subject, message, mail_obj):
-    mail_obj.send(to=email_list, subject=subject,
-                  message=message + "\n\n" + email_footer)
+def send_email_task(email_list, message):
+    mail = current.mail
+    mail.send(
+        to=email_list,
+        subject=email_subject,
+        message=message + "\n\n" + email_footer
+    )
 
 
-def notificar(suscriptor, texto, db_smsgw=None, mail_obj=None):
+def notificar(suscriptor, texto):
+    
     api_data = {
         "number": suscriptor.telefono,
         "text": texto,
         "sender": sms_sender
     }
 
-    if use_smsgw and db_smsgw is not None:
-        db_smsgw.outbox.insert(**api_data)
+    if use_smsgw:
+        db = current.db_smsgw
+        db.outbox.insert(**api_data)
     elif not use_smsgw:
         send_api(api_data)
 
-    if suscriptor.correo and mail_obj is not None:
+    if suscriptor.correo:
         send_email_task(
             [suscriptor.correo],
-            email_subject,
-            api_data["text"],
-            mail_obj)
+            api_data["text"]
+        )

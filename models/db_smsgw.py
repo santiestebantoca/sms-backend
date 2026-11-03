@@ -1,5 +1,6 @@
 # models/db_smsgw.py
 from gluon.contrib.appconfig import AppConfig
+from gluon import current
 
 app_config = AppConfig(reload=False)
 
@@ -12,5 +13,6 @@ if use_smsgw:
         db_smsgw.Field("text", "string", lenght=3000),
         db_smsgw.Field("sender")
     )
+    current.db_smsgw = db_smsgw
 else:
     db_smsgw = None

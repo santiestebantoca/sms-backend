@@ -3,6 +3,7 @@
 from gluon.contrib.appconfig import AppConfig
 from gluon.tools import Auth, Service, PluginManager
 from gluon.contrib.login_methods.ldap_auth import ldap_auth
+from gluon import current
 
 request.requires_https()
 
@@ -71,16 +72,14 @@ tabla = db.define_table
 T.force("es")
 
 """
-As long as possible, we use validate_and_update/insert rather than update or SQLFORM
-* validate_and_update returns an Object with 'updated' and 'errors' which is a standard on client side
-* validate_and_insert returns an Object with 'id' and 'errors' which is a standard on client side
+La aplicación usa validate_and_update/insert en vez de SQLFORM
+Estos métodos devuelven un objeto {updated/id, errors} que es estándar en el cliente
 """
 
 # CORS Policy (RESTFUL API )
 """
-Using X-Requested-With header, implies using OPTIONS for any method (GET, POST, ...)
-We force X-Requested-With: XMLHttpRequest in client request,
-that is the way web2py recognizes the ajax request.
+Usar X-Requested-With header, implica usar OPTIONS para cualquier método (GET, POST, ...)
+La petición del cliente trae X-Requested-With: XMLHttpRequest, así web2py la reconozca como ajax.
 """
 
 # frontURL = myconf.get('front.url', request.env.http_origin)
@@ -98,8 +97,6 @@ headers = {
     "Access-Control-Max-Age": 86400,
 }
 
-# response.headers.update(**headers)
-
 if request.ajax:
 
     def resp401():
@@ -111,3 +108,6 @@ if request.ajax:
 
     auth.settings.on_failed_authentication = resp401
     auth.settings.on_failed_authorization = resp403
+
+current.db = db
+current.mail = mail

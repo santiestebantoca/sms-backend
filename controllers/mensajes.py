@@ -9,30 +9,30 @@ def mensajes():
         if id:
             res = db.mensaje(id)
             return response.json(res)
+
+        fds = [
+            db.vw_mensaje.id,
+            db.vw_mensaje.de,
+            db.vw_mensaje.en,
+            db.vw_mensaje.texto,
+            db.vw_mensaje.continua,
+            db.vw_mensaje.previo,
+            db.vw_mensaje.subgrupo,
+        ]
+        args = dict(distinct=True, orderby=db.vw_mensaje.id)
+        query = None
+        if continua:
+            query = db.vw_mensaje.continua == True
+        elif desde and hasta:
+            query = db.vw_mensaje.en >= desde
+            query &= db.vw_mensaje.en <= hasta + " 23:59:59"
+        if query:
+            if search:
+                query &= db.vw_mensaje.texto.contains(search)
         else:
-            fds = [
-                db.vw_mensaje.id,
-                db.vw_mensaje.de,
-                db.vw_mensaje.en,
-                db.vw_mensaje.texto,
-                db.vw_mensaje.continua,
-                db.vw_mensaje.previo,
-                db.vw_mensaje.subgrupo,
-            ]
-            args = dict(distinct=True, orderby=db.vw_mensaje.id)
-            query = None
-            if continua:
-                query = db.vw_mensaje.continua == True
-            elif desde and hasta:
-                query = db.vw_mensaje.en >= desde
-                query &= db.vw_mensaje.en <= hasta + " 23:59:59"
-            if query:
-                if search:
-                    query &= db.vw_mensaje.texto.contains(search)
-            else:
-                query = db.vw_mensaje.id == 0
-            res = db(query).select(*fds, **args)
-            return response.json(res)
+            query = db.vw_mensaje.id == 0
+        res = db(query).select(*fds, **args)
+        return response.json(res)
 
     @auth.requires_login()
     def PUT(id, **vars):
@@ -66,7 +66,7 @@ def mensajes():
         for suscriptor in suscriptores:
             res = db.envio.validate_and_insert(mensaje_id=mensaje.id,
                                                suscriptor_id=suscriptor.id)
-            notificar(suscriptor, mensaje.texto, db_smsgw=db_smsgw, mail_obj=mail)
+            notificar(suscriptor, mensaje.texto)
             
         return response.json(mensaje)
 

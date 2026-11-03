@@ -22,7 +22,7 @@ tabla(
     Field("nombre", notnull=True),
     Field("cargo"),
     Field("telefono", "integer", notnull=True, unique=True),
-    Field("grupo", "reference grupo"),
+    Field("grupo", "reference grupo", required=True),
     Field("activo", "boolean", default=True),
     Field("suplente", "reference suscriptor"),
     Field("correo", requires=IS_EMPTY_OR(IS_EMAIL())),

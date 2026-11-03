@@ -7,35 +7,27 @@ def plantillas():
 
     def GET(id=None, search=None):
         if id:
-            def name(user):
-                if not user:
-                    return ""
-                return "{first_name} {last_name}".format(**user).strip()
-
             fields = [
                 db.plantilla.id,
                 db.plantilla.texto,
-                db.plantilla.created_by,
                 db.plantilla.modified_by,
-                db.plantilla.created_on,
                 db.plantilla.modified_on,
             ]
-            row = db(db.plantilla.id == id).select(*fields).first()
-            row["created_by"] = name(db.auth_user(row["created_by"]))
-            row["modified_by"] = name(db.auth_user(row["modified_by"]))
-            return response.json(row)
-        else:
-            fds = [
-                db.vw_plantilla.id,
-                db.vw_plantilla.texto,
-                db.vw_plantilla.modified_by,
-            ]
-            args = dict(distinct=True, orderby=~db.vw_plantilla.id)
-            query = db.vw_plantilla.id > 0
-            if search:
-                query &= db.vw_plantilla.texto.contains(search)
-            res = db(query).select(*fds, **args)
-            return response.json(res)
+            plantilla = db(db.plantilla.id == id).select(*fields).first()
+            plantilla.modified_by = plantilla.modified_by and db.vw_usuario(plantilla.modified_by).name
+            return response.json(plantilla)
+
+        fds = [
+            db.vw_plantilla.id,
+            db.vw_plantilla.texto,
+            db.vw_plantilla.modified_by,
+        ]
+        args = dict(distinct=True, orderby=~db.vw_plantilla.id)
+        query = db.vw_plantilla.id > 0
+        if search:
+            query &= db.vw_plantilla.texto.contains(search)
+        res = db(query).select(*fds, **args)
+        return response.json(res)
 
     def POST(**vars):
         res = db.plantilla.validate_and_insert(**vars)
