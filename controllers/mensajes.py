@@ -43,7 +43,7 @@ def mensajes():
         return response.json(db.mensaje(id))
 
     @auth.requires_login()
-    def POST(texto, continua, destinatarios, previo=None):
+    def POST(texto, destinatarios, continua=False, previo=None):
         from applications.sms.modules.notificar.notificar import notificar
 
         de = auth.user_id
@@ -67,7 +67,7 @@ def mensajes():
             res = db.envio.validate_and_insert(mensaje_id=mensaje.id,
                                                suscriptor_id=suscriptor.id)
             notificar(suscriptor, mensaje.texto)
-            
+
         return response.json(mensaje)
 
     def OPTIONS(*args, **vars):

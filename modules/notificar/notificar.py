@@ -52,7 +52,7 @@ def notificar(suscriptor, texto):
     if use_smsgw:
         db = current.db_smsgw
         db.outbox.insert(**api_data)
-    elif not use_smsgw:
+    else:
         send_api(api_data)
 
     if suscriptor.correo:
