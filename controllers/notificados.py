@@ -29,9 +29,10 @@ def notificados():
                     db.suscriptor.grupo,
                 ]
                 for r in res:
+                    suscriptores_query = (db.suscriptor.grupo == r["id"]) & (
+                        db.suscriptor.activo == True)
                     r.update(suscriptores=(
-                        db(db.suscriptor.grupo == r["id"]).select(
-                            *fds).as_list()
+                        db(suscriptores_query).select(*fds).as_list()
                     ))
             return response.json(res)
         else:
